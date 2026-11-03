@@ -1,0 +1,110 @@
+/* aurora.css = the page layout ("Aurora"): a portrait hero that scrolls away, then full-width chapters.
+   Loads after site.css, which holds the tokens and the working parts.
+   Palette: Night shift, with whole Nord fields (frost for Break the build, aurora green for Contact).
+   Type: Albert Sans. */
+
+:root {
+  --font-display: "Albert Sans", system-ui, sans-serif;
+  --font-text: "Albert Sans", system-ui, sans-serif;
+  --display-weight: 800;
+  --display-tracking: -0.04em;
+  --display-leading: 0.95;
+  --wrap: 88rem;
+}
+
+/* ---------- hero: portrait panel + introduction, one screen, scrolls away ---------- */
+.a-hero { display: grid; grid-template-columns: 42% minmax(0, 1fr); height: 100svh; min-height: 34rem; max-height: 75rem; }
+.a-photo { display: grid; grid-template-rows: minmax(0, 1fr) auto; background: #15181f; min-height: 0; overflow: clip; }
+.a-photo-img { width: 100%; height: 100%; min-height: 0; object-fit: cover; object-position: 50% 22%; }
+.a-band { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.35rem 1.5rem; align-items: end; padding: 1.5rem var(--margin) 1.75rem; background: var(--surface); }
+.a-name { font-family: var(--font-display); font-weight: var(--display-weight); font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.2; }
+.a-role { grid-column: 1; color: var(--muted); }
+.a-place { grid-column: 2; grid-row: 2; color: var(--muted); font-variant-numeric: tabular-nums; }
+/* the right half sits on a dim, softened photo of server racks (NOIRLab, CC BY 4.0) */
+.a-intro { background: #0a0d14 url("../assets/img/hero-racks.jpg") center / cover no-repeat; min-height: 0; display: grid; grid-template-rows: auto 1fr; padding: 1.5rem var(--margin) clamp(3rem, 9vh, 5.5rem) clamp(1.5rem, 4.5vw, 4.5rem); }
+.a-nav { display: flex; gap: 1.5rem; justify-content: flex-end; flex-wrap: wrap; }
+.a-intro-copy { align-self: end; display: grid; gap: 1.5rem; justify-items: start; }
+.a-title { font-size: min(clamp(2.375rem, 1rem + 4.2vw, 5.75rem), 9.5svh); max-width: 14ch; }
+.a-lede { font-size: min(var(--step-lead), 3.2svh); line-height: 1.4; max-width: 34ch; color: #d8dee9; }
+
+/* ---------- chapters: heading column on the left, the working part on the right ---------- */
+.chapter { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 2.5rem clamp(2rem, 5vw, 5rem); align-items: start; padding: clamp(4.5rem, 8vw, 7.5rem) max(var(--margin), (100% - var(--wrap)) / 2); }
+.chapter > * { min-width: 0; }
+.c-head { display: grid; gap: 1.25rem; align-content: start; }
+.c-body { min-width: 0; }
+.c-wide { grid-column: 1 / -1; }
+.s-h { font-size: var(--step-head); }
+.s-strong { font-size: var(--step-lead); font-weight: 600; line-height: 1.35; max-width: 34ch; }
+.s-note { color: var(--muted); max-width: 34ch; }
+.s-text { display: grid; gap: 1rem; max-width: 36rem; }
+.c-body .ci { width: min(34rem, 100%); margin-left: auto; }
+.chapter .services { grid-column: auto; font-size: var(--step-small); }
+
+/* on wide screens the heading column follows you down a long chapter */
+@media (min-width: 60em) {
+  .c-head { position: sticky; top: 2rem; }
+}
+
+/* Break the build on a whole frost field */
+.chapter-field { background: var(--frost); color: #0a0d14; --muted: #20303a; }
+.chapter-field .lab { min-height: 0; }
+
+/* How a change ships */
+.s-ship { display: grid; gap: 4rem; }
+.s-ship .exchange + .exchange { margin-top: 0; }
+.s-ship .exchange-last { grid-column: auto; }
+.s-ship .exchange-last > .ex-say, .s-ship .exchange-last > .call { max-width: none; }
+.s-ship .response, .s-ship .ex-after { margin-left: 0; }
+.call { border-radius: var(--r-ui); }
+
+/* Projects: text left, picture right */
+.s-proj { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 1.5rem clamp(2rem, 5vw, 5rem); align-items: start; }
+.s-proj + .s-proj { margin-top: 3rem; }
+.s-proj-text { display: grid; gap: 0.75rem; }
+.s-proj-name { font-size: var(--step-lead); font-family: var(--font-display); font-weight: var(--display-weight); letter-spacing: -0.02em; line-height: 1.2; }
+.s-proj-tags { color: var(--aurora-yellow); font-weight: 600; font-size: var(--step-small); }
+.media-stage { border-radius: var(--r-ui); }
+.media-sense { border-radius: var(--r-ui); overflow: clip; }
+
+/* Experience and the toolbox: full width, two columns of tools */
+.toolbox { margin-top: 1.5rem; }
+.tools { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.25rem 2.5rem; }
+.tools li, .tools li:nth-child(even) { grid-template-columns: 2.25rem minmax(0, 1fr); column-gap: 0.85rem; min-height: 0; background: none; padding: 0.7rem 0; }
+.tools img { grid-row: span 2; }
+.t-name { font-size: var(--step-body); transition: color var(--t-hover) ease; }
+.t-where { font-size: var(--step-small); }
+@media (hover: hover) and (pointer: fine) { .tools li:hover { background: none; } .tools li:hover .t-name { color: var(--frost); } }
+
+/* About */
+.chapter .letter { grid-column: auto; display: grid; gap: 1.25rem; max-width: 46rem; font-size: var(--step-lead); line-height: 1.45; }
+.chapter .letter .signoff span { font-size: var(--step-small); }
+
+/* Contact on a whole aurora-green field */
+.chapter-contact { background: #2b4536; color: #eceff4; --muted: #b9cbb8; --field-bg: #eceff4; --accent: #a3be8c; --accent-hover: #bcd1a9; --accent-ink: #13221a; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.chapter-contact .contact-form, .chapter-contact .contact-rows { width: min(36rem, 100%); }
+.chapter-contact .contact-prompt .soft { color: #b9cbb8; }
+.chapter-contact .contact-rows { margin-top: 0; align-self: end; }
+.chapter-contact .field { color: #0a0d14; }
+.chapter-contact :focus-visible { outline-color: #a3be8c; }
+
+.s-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem 2rem; padding: 2rem max(var(--margin), (100% - var(--wrap)) / 2) 2.5rem; color: var(--muted); font-size: var(--step-small); }
+
+/* ---------- tablet and phone: everything stacks ---------- */
+@media (max-width: 59.99em) {
+  .a-hero { grid-template-columns: minmax(0, 1fr); height: auto; min-height: 0; max-height: none; }
+  .a-photo { min-height: 0; }
+  .a-photo-img { height: 62svh; }
+  .a-intro { padding: 2.5rem var(--margin) 3.5rem; grid-template-rows: auto; }
+  .a-title { font-size: clamp(2.375rem, 1rem + 4.2vw, 5.75rem); }
+  .a-lede { font-size: var(--step-lead); }
+  .a-nav { order: 2; justify-content: flex-start; margin-top: 2rem; }
+  .a-intro-copy { order: 1; }
+  .chapter, .s-proj, .chapter-contact { grid-template-columns: minmax(0, 1fr); }
+  .c-body .ci { margin-left: 0; }
+}
+@media (max-width: 47.99em) {
+  .tools { grid-template-columns: minmax(0, 1fr); }
+  .a-band { grid-template-columns: minmax(0, 1fr); }
+  .a-place { display: none; }
+}
+.a-lab-stack { display: grid; gap: 3.5rem; }

@@ -1,0 +1,11 @@
+.agents/
+.claude/
+.codex/
+.impeccable/
+.taste-skill/
+skills-lock.json
+
+# OS and editor leftovers
+.DS_Store
+*.swp
+*~

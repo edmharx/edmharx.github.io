@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edmharx Macasinag · learning DevOps</title>
+  <meta name="description" content="Edmharx Macasinag, Computer Engineering student at PUP Sta. Mesa and IT support intern, learning DevOps by rebuilding a home server from a git repo.">
+  <meta name="theme-color" content="#0a0d14">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,400;0,600;0,800;1,400&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add('js')</script>
+  <link rel="stylesheet" href="css/site.css">
+  <link rel="stylesheet" href="css/aurora.css">
+</head>
+<body class="aurora">
+
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- ============ HERO: portrait left, introduction right (one screen, scrolls away) ============ -->
+<header class="a-hero" id="top">
+  <div class="a-photo">
+    <img class="a-photo-img" src="assets/img/me.jpg" width="960" height="1200" alt="Portrait of Edmharx Macasinag" decoding="async" fetchpriority="high">
+    <div class="a-band">
+      <p class="a-name">Edmharx Macasinag</p>
+      <p class="a-role">Computer Engineering student · aspiring DevOps engineer</p>
+      <p class="a-place">Manila, <span id="clock">UTC+8</span></p>
+    </div>
+  </div>
+  <div class="a-intro">
+    <nav class="a-nav" aria-label="Sections">
+      <a class="link" href="#projects">Projects</a>
+      <a class="link" href="#log">Learning log</a>
+      <a class="link" href="#experience">Experience</a>
+      <a class="link" href="#contact">Contact</a>
+    </nav>
+    <div class="a-intro-copy">
+      <h1 class="a-title">Learning DevOps on my own server</h1>
+      <p class="a-lede">Computer Engineering student at PUP Sta.&nbsp;Mesa and IT support intern. My home server now rebuilds itself from a git repo; its real pipeline is below.</p>
+      <a class="button" href="#projects">See what I built</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+    <section class="chapter" id="homelab" aria-labelledby="homelab-title">
+      <div class="c-head">
+        <h2 class="s-h" id="homelab-title" data-reveal>Homelab as Code</h2>
+        <div class="s-text">
+          <p class="s-strong" data-reveal>Until October, my home server was set up by hand, and the only record of how was the server itself.</p>
+          <p data-reveal>Now every service is a folder in a git repo: its Compose file, its settings, and a README that says why.</p>
+          <p data-reveal>An Ansible playbook turns a fresh Ubuntu install into the same server; I proved it on 30 October on a lab VM. GitHub Actions checks every push, and a dead man’s switch tells me when monitoring goes quiet.</p>
+        </div>
+      </div>
+      <div class="c-body a-lab-stack">
+        <div data-reveal>
+    <div class="ci" data-ui id="hero-ci" aria-label="The homelab's CI pipeline">
+      <div class="ci-head">
+        <p class="ci-name"><strong>CI</strong> <span>push to main · 3 Nov, 14:23</span></p>
+        <p class="ci-commit">.gitignore: monitoring/prometheus/targets/</p>
+      </div>
+      <ul class="ci-jobs" role="list">
+        <li class="job is-passed" data-dur="9"><span class="job-dot" aria-hidden="true"></span><span class="job-name">Secrets<small>gitleaks</small></span><span class="job-state">9s</span></li>
+        <li class="job is-passed" data-dur="14"><span class="job-dot" aria-hidden="true"></span><span class="job-name">Lint<small>shellcheck, pyflakes, yamllint, actionlint</small></span><span class="job-state">14s</span></li>
+        <li class="job is-passed" data-dur="7"><span class="job-dot" aria-hidden="true"></span><span class="job-name">Docker Compose files<small>config check, no unpinned images</small></span><span class="job-state">7s</span></li>
+        <li class="job is-passed" data-dur="9"><span class="job-dot" aria-hidden="true"></span><span class="job-name">Prometheus config<small>promtool</small></span><span class="job-state">9s</span></li>
+        <li class="job is-passed" data-dur="5"><span class="job-dot" aria-hidden="true"></span><span class="job-name">nftables syntax<small>nft -c, applies nothing</small></span><span class="job-state">5s</span></li>
+        <li class="job is-passed" data-dur="38"><span class="job-dot" aria-hidden="true"></span><span class="job-name">Ansible<small>ansible-lint, production profile</small></span><span class="job-state">38s</span></li>
+      </ul>
+      <div class="ci-foot">
+        <button class="ui-button" type="button" id="ci-run">Run it again</button>
+        <p class="ci-total" aria-live="polite" id="ci-status">40 runs since 29 Oct · 36 passed · 4 failed</p>
+      </div>
+    </div>
+        </div>
+  <div class="services" data-ui data-reveal style="--d:2">
+    <table>
+      <caption>What runs on the server, all described in the repo</caption>
+      <thead><tr><th scope="col">Service</th><th scope="col">Job</th><th scope="col">Runs as</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">AdGuard Home</th><td>DNS for the home network and the tailnet</td><td>container</td></tr>
+        <tr><th scope="row">NetAlertX</th><td>Spots new devices on the LAN</td><td>container</td></tr>
+        <tr><th scope="row">Prometheus</th><td>Keeps 30 days of server, container and probe metrics</td><td>container</td></tr>
+        <tr><th scope="row">Grafana</th><td>Dashboards, and alerts to Discord</td><td>container</td></tr>
+        <tr><th scope="row">node_exporter, cAdvisor, blackbox</th><td>Feed Prometheus: host, containers, HTTP and DNS probes</td><td>containers</td></tr>
+        <tr><th scope="row">Dead man’s switch</th><td>Pings healthchecks.io every 5 minutes while monitoring is healthy</td><td>container</td></tr>
+        <tr><th scope="row">Syncthing</th><td>Keeps notes in sync between my machines</td><td>container</td></tr>
+        <tr><th scope="row">claude-ops</th><td>Writes a read-only daily health report</td><td>systemd service</td></tr>
+        <tr><th scope="row">ops-relay</th><td>Discord bot with no AI that passes messages to claude-ops</td><td>container</td></tr>
+        <tr><th scope="row">Crafty</th><td>A Minecraft server for friends, reachable over Tailscale only</td><td>container</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+      </div>
+    </section>
+
+    <section class="chapter chapter-field" id="break" aria-labelledby="break-title">
+      <div class="c-head">
+        <h2 class="s-h" id="break-title" data-reveal>Break the build</h2>
+        <p class="s-strong" data-reveal>Six jobs run on every push. Turn on a mistake and see which job catches it.</p>
+        <p class="s-note" data-reveal>Every switch is a mistake this pipeline really caught on 29 and 30 October.</p>
+      </div>
+      <div class="c-body">
+  <div class="lab" data-ui data-reveal style="--d:2">
+    <div class="lab-run">
+      <p class="lab-title" id="lab-title">CI · push to main</p>
+      <ul class="ci-jobs" role="list" id="lab-jobs">
+        <li class="job is-passed" data-job="secrets"><span class="job-dot" aria-hidden="true"></span><span class="job-name">Secrets<small>gitleaks</small></span><span class="job-state">passed</span></li>
+        <li class="job is-passed" data-job="lint"><span class="job-dot" aria-hidden="true"></span><span class="job-name">Lint<small>shell, Python, YAML, JSON</small></span><span class="job-state">passed</span></li>
+        <li class="job is-passed" data-job="compose"><span class="job-dot" aria-hidden="true"></span><span class="job-name">Docker Compose files</span><span class="job-state">passed</span></li>
+        <li class="job is-passed" data-job="prometheus"><span class="job-dot" aria-hidden="true"></span><span class="job-name">Prometheus config</span><span class="job-state">passed</span></li>
+        <li class="job is-passed" data-job="nftables"><span class="job-dot" aria-hidden="true"></span><span class="job-name">nftables syntax</span><span class="job-state">passed</span></li>
+        <li class="job is-passed" data-job="ansible"><span class="job-dot" aria-hidden="true"></span><span class="job-name">Ansible</span><span class="job-state">passed</span></li>
+      </ul>
+      <pre class="lab-log" id="lab-log" aria-live="polite"><code>All 6 jobs passed. Safe to deploy.</code></pre>
+      <a class="lab-link" href="#ship">How a change ships</a>
+    </div>
+
+    <fieldset class="lab-controls">
+      <legend>Mistakes to commit</legend>
+      <button class="switch" type="button" role="switch" aria-checked="false" data-break="secret"><span>Secret in .env.example</span><span class="knob" aria-hidden="true"></span></button>
+      <button class="switch" type="button" role="switch" aria-checked="false" data-break="checksum"><span>Checksum that looks like a key</span><span class="knob" aria-hidden="true"></span></button>
+      <button class="switch" type="button" role="switch" aria-checked="false" data-break="cd"><span><code>cd</code> with no fallback</span><span class="knob" aria-hidden="true"></span></button>
+      <button class="switch" type="button" role="switch" aria-checked="false" data-break="quote"><span><code>$</code> inside single quotes</span><span class="knob" aria-hidden="true"></span></button>
+      <button class="switch" type="button" role="switch" aria-checked="false" data-break="latest"><span>Image tag <code>:latest</code></span><span class="knob" aria-hidden="true"></span></button>
+      <button class="switch" type="button" role="switch" aria-checked="false" data-break="indent"><span>Bad indent in ci.yml</span><span class="knob" aria-hidden="true"></span></button>
+      <button class="lab-reset" type="button" id="lab-reset">Fix everything</button>
+    </fieldset>
+  </div>
+
+      </div>
+    </section>
+
+    <section class="chapter" id="ship" aria-labelledby="ship-title">
+      <div class="c-head">
+        <h2 class="s-h" id="ship-title" data-reveal>How a change ships</h2>
+        <p class="s-note" data-reveal>Laptop, CI, a throwaway VM, then a dry run on the real server.</p>
+      </div>
+      <div class="c-body s-ship">
+  <div class="exchange">
+    <p class="ex-say" data-reveal>First, CI checks every push.</p>
+    <div class="call" data-reveal style="--d:1">
+      <pre><code>git push origin main</code></pre>
+      <button class="copy" type="button" data-copy="git push origin main">Copy</button>
+    </div>
+    <div class="response" data-ui data-reveal style="--d:2">
+      <p class="resp-line"><span class="pill-ok" aria-hidden="true"></span><strong>CI</strong> 6 of 6 jobs passed · longest 38s (ansible-lint)</p>
+    </div>
+  </div>
+
+  <div class="exchange">
+    <p class="ex-say" data-reveal>Then, Ansible builds it on a throwaway VM.</p>
+    <div class="call" data-reveal style="--d:1">
+      <pre><code>ansible-playbook site.yml -K</code></pre>
+      <button class="copy" type="button" data-copy="ansible-playbook site.yml -K">Copy</button>
+    </div>
+    <div class="response" data-ui data-reveal style="--d:2">
+      <pre class="recap"><code><span class="c-dim">PLAY RECAP · lab VM rebuilt from an empty disk, 30 Oct</span>
+testvm    changed=35   failed=0
+<span class="c-dim">same playbook, second run: nothing left to fix</span>
+testvm    changed=0    failed=0</code></pre>
+    </div>
+    <p class="ex-after" data-reveal style="--d:3">Only then does the real server get a dry run first: <code>--check --diff</code>.</p>
+  </div>
+
+  <div class="exchange exchange-last">
+    <p class="ex-say" data-reveal>Finally, if the server goes quiet, I hear about it.</p>
+    <div class="call" data-reveal style="--d:1">
+      <pre><code>docker compose stop   # test B: silence the dead man's switch</code></pre>
+      <button class="copy" type="button" data-copy="docker compose stop">Copy</button>
+    </div>
+    <div class="response response-wide" data-ui data-reveal style="--d:2">
+      <p class="tl-title">Both alert tests on 3 November, Manila time</p>
+      <ol class="timeline">
+        <li><span class="tl-time">09:43</span><span class="tl-ev is-bad">FAIL: grafana</span><span class="tl-note">Test A: monitoring broken, alert at once on Discord and email</span></li>
+        <li><span class="tl-time">09:45</span><span class="tl-ev is-ok">OK</span><span class="tl-note">Grafana back, alert resolved</span></li>
+        <li><span class="tl-time">+10 min</span><span class="tl-ev is-bad">DOWN</span><span class="tl-note">Test B: no ping for 5 min period + 5 min grace</span></li>
+        <li><span class="tl-time">09:57</span><span class="tl-ev is-ok">UP</span><span class="tl-note">Container started again, pings resume</span></li>
+      </ol>
+    </div>
+  </div>
+
+      </div>
+    </section>
+
+    <section class="chapter" id="log" aria-labelledby="log-title">
+      <div class="c-head">
+        <h2 class="s-h" id="log-title" data-reveal>89 commits, eight days</h2>
+        <p class="s-strong" data-reveal>My learning log, straight from the repo’s history. Pick a day.</p>
+      </div>
+      <div class="c-body">
+  <div class="log-body">
+    <div class="log-tabs" role="tablist" aria-label="Days">
+      <button role="tab" type="button" id="tab-1027" aria-controls="day-1027" aria-selected="false">Tue<small>27 Oct · 6 commits</small></button>
+      <button role="tab" type="button" id="tab-1028" aria-controls="day-1028" aria-selected="false">Wed<small>28 Oct · 24 commits</small></button>
+      <button role="tab" type="button" id="tab-1029" aria-controls="day-1029" aria-selected="false">Thu<small>29 Oct · 17 commits</small></button>
+      <button role="tab" type="button" id="tab-1030" aria-controls="day-1030" aria-selected="false">Fri<small>30 Oct · 24 commits</small></button>
+      <button role="tab" type="button" id="tab-1102" aria-controls="day-1102" aria-selected="false">Mon<small>2 Nov · 8 commits</small></button>
+      <button role="tab" type="button" id="tab-1103" aria-controls="day-1103" aria-selected="true">Tue<small>3 Nov · 10 commits</small></button>
+    </div>
+
+    <div class="log-days">
+      <ol class="day" role="tabpanel" id="day-1027" aria-labelledby="tab-1027">
+        <li><time>17:35</time><p class="b-title">Repo skeleton<span>Day one: the server’s setup starts living in git.</span></p><span class="b-tag">Git</span></li>
+        <li><time>18:30</time><p class="b-title">Add monitoring stack: Prometheus, node_exporter, cAdvisor, Grafana<span>The first stack I wrote as a Compose file.</span></p><span class="b-tag">Monitoring</span></li>
+        <li><time>19:15</time><p class="b-title">Edit compose.yaml cadvisor image v3<span>Third try at the right image, and all three are in the history.</span></p><span class="b-tag">Docker</span></li>
+        <li><time>20:42</time><p class="b-title">First set of dashboard<span>Grafana showing the server for the first time.</span></p><span class="b-tag">Monitoring</span></li>
+      </ol>
+      <ol class="day" role="tabpanel" id="day-1028" aria-labelledby="tab-1028">
+        <li><time>00:15</time><p class="b-title">Transfer NetAlertX compose from old CasaOS compose<span>Moving services out of a click-through UI into files I own.</span></p><span class="b-tag">Docker</span></li>
+        <li><time>10:05</time><p class="b-title">Containerize netalertx-bridge (Dockerfile + compose)<span>My first Dockerfile for a small Python service.</span></p><span class="b-tag">Docker</span></li>
+        <li><time>13:43</time><p class="b-title">Fixed prometheus.yml indentations<span>promtool caught it before Prometheus did.</span></p><span class="b-tag">Monitoring</span></li>
+        <li><time>21:29</time><p class="b-title">Grafana alerting: contact point, policy, rules<span>Alerts provisioned as files, sent to Discord.</span></p><span class="b-tag">Alerting</span></li>
+        <li><time>22:43</time><p class="b-title">Add dead man’s switch (healthchecks.io ping, checks Prometheus + Grafana)<span>Who watches the watchers: an outside service that expects a ping.</span></p><span class="b-tag">Alerting</span></li>
+      </ol>
+      <ol class="day" role="tabpanel" id="day-1029" aria-labelledby="tab-1029">
+        <li><time>10:22</time><p class="b-title">Add claude-ops agent: read-only daily report (firewalled, no sudo/docker)<span>An AI helper that can look but not touch.</span></p><span class="b-tag">Security</span></li>
+        <li><time>11:31</time><p class="b-title">claude-ops hardening: systemd IP lock + sandboxing<span>Exposure score from 8.3 down to 1.5.</span></p><span class="b-tag">Linux</span></li>
+        <li><time>17:21</time><p class="b-title">CI: gitleaks, shellcheck, pyflakes, yamllint, actionlint, compose, promtool, nft<span>The pipeline is born. Its first run failed three jobs.</span></p><span class="b-tag">CI</span></li>
+        <li><time>18:02</time><p class="b-title">Fix CI findings: dead webhook secret ignored, cd check in chat.sh, pin Crafty 4.11.0<span>Green, by fixing what it found instead of muting it.</span></p><span class="b-tag">CI</span></li>
+        <li><time>22:18</time><p class="b-title">Ansible: lab/prod inventories, base role (packages, time zone)<span>Phase 2 starts, on a throwaway VM first.</span></p><span class="b-tag">Ansible</span></li>
+      </ol>
+      <ol class="day" role="tabpanel" id="day-1030" aria-labelledby="tab-1030">
+        <li><time>01:03</time><p class="b-title">gitleaks: ignore docker_key_sha256 (checksum of Docker’s public apt key, not a secret)<span>A false positive, checked and recorded instead of disabled.</span></p><span class="b-tag">Security</span></li>
+        <li><time>08:50</time><p class="b-title">Fixed ci.yml indentation<span>The one time the pipeline couldn’t even start.</span></p><span class="b-tag">CI</span></li>
+        <li><time>09:19</time><p class="b-title">netalertx-bridge: fixed UID/GID 2001 (995 collides with messagebus on fresh Ubuntu)<span>Found only because the fresh VM isn’t my server.</span></p><span class="b-tag">Linux</span></li>
+        <li><time>14:03</time><p class="b-title">Ansible: ufw role, mirrors homeserver’s current rules 1:1<span>Copy the firewall exactly first, change it second.</span></p><span class="b-tag">Ansible</span></li>
+        <li><time>20:00</time><p class="b-title">Ansible: ansible-lint clean + ansible-lint job in CI<span>Clean at the strictest profile, now checked on every push.</span></p><span class="b-tag">CI</span></li>
+        <li><time>21:00</time><p class="b-title">Docs: Phase 2 done (roadmap, change log, backups, drift check)<span>Lab VM rebuilt from an empty disk with one run.</span></p><span class="b-tag">Ansible</span></li>
+      </ol>
+      <ol class="day" role="tabpanel" id="day-1102" aria-labelledby="tab-1102">
+        <li><time>14:29</time><p class="b-title">Alerts: gauge-safe new-device rule, 9 containers watched, restarts over 1h<span>Alert rules that stop crying wolf.</span></p><span class="b-tag">Alerting</span></li>
+        <li><time>15:53</time><p class="b-title">claude-ops: host IPs from Ansible (host.conf drop-in), no hard-coded addresses<span>One source of truth for every address.</span></p><span class="b-tag">Ansible</span></li>
+        <li><time>15:53</time><p class="b-title">Docs: pre-push checklist (secrets, lint, lab + prod check, server diff)<span>The habit, written down.</span></p><span class="b-tag">Docs</span></li>
+        <li><time>16:01</time><p class="b-title">claude-ops README: update egress.nft via Ansible (atomic nft -f), not systemctl restart<span>Firewall changes that never leave a gap.</span></p><span class="b-tag">Linux</span></li>
+      </ol>
+      <ol class="day" role="tabpanel" id="day-1103" aria-labelledby="tab-1103">
+        <li><time>07:24</time><p class="b-title">crafty: Minecraft port 25565 on the Tailscale IP only (Docker bypasses ufw)<span>Published Docker ports skip the firewall, so the bind address is the lock.</span></p><span class="b-tag">Security</span></li>
+        <li><time>10:10</time><p class="b-title">Docs: dead man’s switch tests A + B passed (Discord + email)<span>A switch I’ve never seen trip is one I can’t trust.</span></p><span class="b-tag">Alerting</span></li>
+        <li><time>12:04</time><p class="b-title">claude-ops: lock A rejects 127.0.0.1:9115 before blackbox listens<span>Close the door before the new service opens it.</span></p><span class="b-tag">Security</span></li>
+        <li><time>12:37</time><p class="b-title">monitoring: blackbox exporter v0.29.1 (nobody, read-only, no caps), HTTP + DNS modules<span>Probing services from the outside in.</span></p><span class="b-tag">Monitoring</span></li>
+        <li><time>14:23</time><p class="b-title">.gitignore: per-host probe targets rendered by Ansible, never committed<span>The latest push, the one at the top of this page.</span></p><span class="b-tag">Git</span></li>
+      </ol>
+    </div>
+  </div>
+
+      </div>
+    </section>
+
+    <section class="chapter" id="projects" aria-labelledby="projects-title">
+      <h2 class="s-h c-wide" id="projects-title" data-reveal>Things I’ve built</h2>
+      <!-- To add a project: copy one <article class="s-proj c-wide"> block. -->
+      <article class="s-proj c-wide" data-reveal>
+        <div class="s-proj-text">
+          <h3 class="s-proj-name">Homelab as Code</h3>
+          <p class="s-proj-tags">Docker · Ansible · CI</p>
+          <p>My home server, described in a git repo: each service as a Compose stack, an Ansible playbook that rebuilds it from an empty disk, CI on every push, and Prometheus and Grafana watching it. The repo is private; I’m happy to walk you through it.</p>
+        </div>
+      <figure class="project-media media-stage">
+        <div class="chart" data-ui role="img" aria-label="CI runs per day: 29 Oct 2 passed 1 failed; 30 Oct 21 passed 3 failed; 2 Nov 4 passed; 3 Nov 9 passed.">
+          <p class="chart-title">CI runs per day</p>
+          <div class="bars">
+            <div class="bar" style="--ok:2;--bad:1"><span class="bar-bad"></span><span class="bar-ok"></span><span class="bar-label">29 Oct<b>3</b></span></div>
+            <div class="bar" style="--ok:21;--bad:3"><span class="bar-bad"></span><span class="bar-ok"></span><span class="bar-label">30 Oct<b>24</b></span></div>
+            <div class="bar" style="--ok:4;--bad:0"><span class="bar-bad"></span><span class="bar-ok"></span><span class="bar-label">2 Nov<b>4</b></span></div>
+            <div class="bar" style="--ok:9;--bad:0"><span class="bar-bad"></span><span class="bar-ok"></span><span class="bar-label">3 Nov<b>9</b></span></div>
+          </div>
+          <p class="chart-key"><span><i class="k-ok"></i>passed</span><span><i class="k-bad"></i>failed</span></p>
+          <p class="chart-note">30 Oct was the Ansible day: 24 runs, 3 of them red.</p>
+        </div>
+        <figcaption>CI runs from the first pipeline run to today.</figcaption>
+      </figure>
+      </article>
+      <article class="s-proj c-wide" data-reveal>
+        <div class="s-proj-text">
+          <h3 class="s-proj-name">claude-ops</h3>
+          <p class="s-proj-tags">Linux · systemd · nftables</p>
+          <p>An AI assistant that writes a read-only daily health report for the server and answers questions in Discord, built so it can look but not touch. It runs as its own user with no sudo and no Docker, an nftables rule lets it reach only the AI provider’s API, and the Discord token stays with a separate relay that has no AI.</p>
+        </div>
+      <figure class="project-media media-stage">
+        <div class="exposure" data-ui>
+          <p class="ex-cmd"><code>systemd-analyze security claude-ops.service</code></p>
+          <div class="ex-row"><span class="ex-label">Before hardening</span><span class="ex-num is-bad">8.3</span><span class="ex-bar" style="--v:8.3"></span></div>
+          <div class="ex-row"><span class="ex-label">After hardening</span><span class="ex-num is-ok">1.5</span><span class="ex-bar is-ok" style="--v:1.5"></span></div>
+          <p class="ex-note">Overall exposure, 0 to 10, lower is safer.</p>
+          <ul class="egress" role="list">
+            <li><span class="is-ok">allow</span> loopback</li>
+            <li><span class="is-ok">allow</span> AI provider API, port 443</li>
+            <li><span class="is-bad">reject</span> everything else from user claude-ops</li>
+          </ul>
+        </div>
+        <figcaption>The service’s sandbox score and its outgoing firewall.</figcaption>
+      </figure>
+      </article>
+      <article class="s-proj c-wide" data-reveal>
+        <div class="s-proj-text">
+          <h3 class="s-proj-name">SENSE-LoRa</h3>
+          <p class="s-proj-tags">ESP32 · LoRa · thesis</p>
+          <p>Our BS Computer Engineering thesis at PUP, defended in October 2026: an ESP32 seismic detection unit and three Heltec LoRa nodes that sound earthquake sirens in under 700&nbsp;ms, and let focal persons message each other with no internet.</p>
+        </div>
+      <figure class="project-media media-sense">
+        <video class="sense-video" src="assets/video/sense-app-drill.mp4" poster="assets/video/sense-app-drill-poster.jpg" width="1120" height="630" muted loop playsinline autoplay preload="metadata" aria-label="The focal-person app on two phones during a drill, linked over LoRa"></video>
+        <img src="assets/img/sense-unit.jpg" width="1600" height="900" alt="3D render of the SENSE seismic detection unit, assembled and exploded" loading="lazy" decoding="async">
+        <img src="assets/img/lora-node.jpg" width="1600" height="900" alt="3D render of a SENSE-LoRa siren node" loading="lazy" decoding="async">
+        <figcaption>The focal-person app during a drill (simulated node data), and renders of the detector and a node.</figcaption>
+      </figure>
+      </article>
+    </section>
+
+    <section class="chapter" id="experience" aria-labelledby="cv-title">
+      <h2 class="s-h c-wide" id="cv-title" data-reveal>Where I work and study</h2>
+      <div class="c-wide">
+  <div class="places">
+    <article class="place place-work" data-reveal>
+      <img class="place-logo" src="assets/logos/tradewindow-light.png" width="640" height="128" alt="TradeWindow">
+      <p class="place-when">Now</p>
+      <h3 class="place-role">IT Desktop Support Intern</h3>
+      <ul class="place-did" role="list">
+        <li>Supporting staff devices day to day</li>
+        <li>Intune compliance policies and remediation scripts</li>
+        <li>Defender for Endpoint investigations</li>
+        <li>An audit-mode rollout of attack surface reduction rules</li>
+        <li>Working through Microsoft Secure Score recommendations</li>
+      </ul>
+    </article>
+    <article class="place place-school" data-reveal style="--d:1">
+      <img class="place-seal" src="assets/logos/pup.png" width="240" height="240" alt="Seal of the Polytechnic University of the Philippines">
+      <p class="place-when">Studying</p>
+      <h3 class="place-role">BS Computer Engineering</h3>
+      <p class="place-org">Polytechnic University of the Philippines, Sta.&nbsp;Mesa, Manila</p>
+      <ul class="place-did" role="list">
+        <li>Thesis: SENSE-LoRa, an ESP32 and LoRa earthquake alert mesh</li>
+        <li>Sirens in under 700&nbsp;ms, messaging with no internet</li>
+        <li>Defended in October 2026</li>
+      </ul>
+    </article>
+  </div>
+
+  <div class="toolbox" id="toolbox">
+    <div class="toolbox-head">
+      <h3 class="h-lead" data-reveal>My toolbox</h3>
+      <p data-reveal style="--d:1">Every tool here, and the place I actually used it.</p>
+    </div>
+
+    <div class="tool-group" data-reveal>
+      <p class="tg-name">Build and ship</p>
+      <ul class="tools" role="list">
+        <li><img src="assets/logos/git.svg" width="28" height="28" alt=""><span class="t-name">Git</span><span class="t-where">Every homelab change; 89 commits in eight days</span></li>
+        <li><img src="assets/logos/githubactions.svg" width="28" height="28" alt=""><span class="t-name">GitHub Actions</span><span class="t-where">Six CI jobs on every push</span></li>
+        <li><img src="assets/logos/docker.svg" width="28" height="28" alt=""><span class="t-name">Docker Compose</span><span class="t-where">Every homelab service is a Compose stack</span></li>
+        <li><img src="assets/logos/ansible.svg" width="28" height="28" alt=""><span class="t-name">Ansible</span><span class="t-where">Rebuilds the server from an empty disk</span></li>
+        <li><img src="assets/logos/gnubash.svg" width="28" height="28" alt=""><span class="t-name">Bash</span><span class="t-where">Scripts, checked by shellcheck in CI</span></li>
+      </ul>
+    </div>
+
+    <div class="tool-group" data-reveal>
+      <p class="tg-name">Watch and alert</p>
+      <ul class="tools" role="list">
+        <li><img src="assets/logos/prometheus.svg" width="28" height="28" alt=""><span class="t-name">Prometheus</span><span class="t-where">30 days of host, container and probe metrics</span></li>
+        <li><img src="assets/logos/grafana.svg" width="28" height="28" alt=""><span class="t-name">Grafana</span><span class="t-where">Dashboards and alert rules, kept as files</span></li>
+        <li><img src="assets/logos/discord.svg" width="28" height="28" alt=""><span class="t-name">Discord</span><span class="t-where">Where homelab alerts land</span></li>
+      </ul>
+    </div>
+
+    <div class="tool-group" data-reveal>
+      <p class="tg-name">Runs on</p>
+      <ul class="tools" role="list">
+        <li><img src="assets/logos/ubuntu.svg" width="28" height="28" alt=""><span class="t-name">Ubuntu Server</span><span class="t-where">The home server</span></li>
+        <li><img src="assets/logos/fedora.svg" width="28" height="28" alt=""><span class="t-name">Fedora</span><span class="t-where">My laptop, every day</span></li>
+        <li><img src="assets/logos/qemu.svg" width="28" height="28" alt=""><span class="t-name">KVM and QEMU</span><span class="t-where">The throwaway lab VM Ansible is tested on</span></li>
+        <li><img src="assets/logos/tailscale.svg" width="28" height="28" alt=""><span class="t-name">Tailscale</span><span class="t-where">Reaching the home network from anywhere</span></li>
+        <li><img src="assets/logos/adguard.svg" width="28" height="28" alt=""><span class="t-name">AdGuard Home</span><span class="t-where">DNS for the home network and the tailnet</span></li>
+        <li><img src="assets/logos/syncthing.svg" width="28" height="28" alt=""><span class="t-name">Syncthing</span><span class="t-where">Notes in sync between my machines</span></li>
+      </ul>
+    </div>
+
+    <div class="tool-group" data-reveal>
+      <p class="tg-name">At work</p>
+      <ul class="tools" role="list">
+        <li><img src="assets/logos/microsoft.svg" width="28" height="28" alt=""><span class="t-name">Intune and Entra ID</span><span class="t-where">Device compliance and remediation scripts at TradeWindow</span></li>
+        <li><img src="assets/logos/microsoft.svg" width="28" height="28" alt=""><span class="t-name">Defender XDR</span><span class="t-where">Endpoint investigations and attack surface reduction rules</span></li>
+      </ul>
+    </div>
+
+    <div class="tool-group" data-reveal>
+      <p class="tg-name">Thesis</p>
+      <ul class="tools" role="list">
+        <li><img src="assets/logos/espressif.svg" width="28" height="28" alt=""><span class="t-name">ESP32</span><span class="t-where">The SENSE detector and the Heltec LoRa nodes</span></li>
+        <li><img src="assets/logos/arduino.svg" width="28" height="28" alt=""><span class="t-name">Arduino</span><span class="t-where">Firmware for the detector and nodes</span></li>
+      </ul>
+    </div>
+
+    <p class="tools-also" data-reveal>Also: nftables, systemd sandboxing, ufw, gitleaks, shellcheck, yamllint, healthchecks.io, libvirt, cloud-init.</p>
+  </div>
+
+      </div>
+    </section>
+
+    <section class="chapter" id="about" aria-labelledby="about-title">
+      <div class="c-head">
+        <h2 class="s-h" id="about-title" data-reveal>About me</h2>
+      </div>
+      <div class="c-body letter" data-reveal>
+      <p>Hi, I’m Edmharx. I study Computer Engineering at the Polytechnic University of the Philippines in Sta. Mesa, and I work as an IT desktop support intern at TradeWindow.</p>
+      <p>I want to work in DevOps, and I’m learning it on a server I depend on. My home server used to be set up by hand, and the only record of it was the machine itself. Now it is a git repo that can rebuild it.</p>
+      <p>Every change takes the same path: written on my laptop, checked by CI, tried on a throwaway VM, and dry-run against the real server before it touches it. When something breaks, the history says what I tried and why.</p>
+      <p>Our thesis, SENSE-LoRa, taught me the other half: systems that have to keep working when the internet doesn’t. I’m looking for a place to keep learning this on real infrastructure.</p>
+        <p class="signoff">Edmharx Macasinag<span>Computer Engineering student, aspiring DevOps engineer</span></p>
+      </div>
+    </section>
+
+    <section class="chapter chapter-contact" id="contact" aria-labelledby="contact-title">
+  <form class="contact-form" id="contact-form" action="mailto:edmharxx@gmail.com" method="get" enctype="text/plain">
+    <h2 id="contact-title" class="contact-prompt"><span class="soft">Want to talk about a role or a project?</span><br>Write to me here.</h2>
+    <div class="field-wrap">
+      <input class="field" type="text" name="body" id="contact-msg" aria-labelledby="contact-title" aria-describedby="contact-help" autocomplete="off">
+      <button class="send" type="submit" aria-label="Send by email">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"/></svg>
+      </button>
+    </div>
+    <p class="contact-help" id="contact-help">This opens your email app with the message filled in.</p>
+  </form>
+  <dl class="contact-rows">
+    <div><dt>Email</dt><dd><a class="link-plain" href="mailto:edmharxx@gmail.com">edmharxx@gmail.com</a></dd></div>
+    <div><dt>GitHub</dt><dd><a class="link-plain" href="https://github.com/edmharx" rel="me">github.com/edmharx</a></dd></div>
+    <div><dt>LinkedIn</dt><dd><a class="link-plain" href="https://www.linkedin.com/in/edmharxx/" rel="me">linkedin.com/in/edmharxx</a></dd></div>
+  </dl>
+    </section>
+
+</main>
+
+    <footer class="s-foot">
+      <p>Built by hand in HTML, CSS and a little JavaScript. Tool logos from <a class="link-plain" href="https://simpleicons.org">Simple Icons</a> (CC0). PUP seal: public domain, via Wikimedia Commons. Hero background: “NOIRLab HQ Server Racks” by NOIRLab/NSF/AURA/T. Slovinský, <a class="link-plain" href="https://commons.wikimedia.org/w/index.php?curid=134195917">CC BY 4.0</a>, softened and darkened.</p>
+      <p>© 2026 Edmharx Macasinag</p>
+    </footer>
+
+<script src="js/site.js" defer></script>
+</body>
+</html>
