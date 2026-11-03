@@ -1,6 +1,6 @@
-# Quality gate for the portfolio site.
-# Every push to main and every pull request must pass the `check` job.
-# (The `deploy` job to GitHub Pages is added in phase 4.)
+# CI/CD for the portfolio site.
+#   check  : every push to main and every pull request must pass (html, links, lighthouse).
+#   deploy : only after check passes, only on main, publishes to GitHub Pages.
 name: pages
 
 on:
@@ -9,14 +9,15 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Least privilege: the check job only needs to read the code.
+# Least privilege by default. The deploy job asks for more, for itself only.
 permissions:
   contents: read
 
-# A newer push to the same branch/PR cancels the older run.
+# A newer push to the same PR cancels the older run.
+# On main, runs queue instead, so a deploy is never cut off halfway.
 concurrency:
-  group: check-${{ github.ref }}
-  cancel-in-progress: true
+  group: pages-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
@@ -55,4 +56,40 @@ jobs:
           path: .lighthouseci/report
           retention-days: 14
           if-no-files-found: ignore
+
+  deploy:
+    name: deploy to GitHub Pages
+    needs: check
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write     # publish to Pages
+      id-token: write  # OIDC: prove to Pages that this run is this repo's main (no stored secret)
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Get the code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check that Pages is set to "GitHub Actions"
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Collect only the website files
+        run: |
+          mkdir -p _site
+          cp -r index.html css js assets _site/
+
+      - name: Package the site
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: _site
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
